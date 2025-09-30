@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: paas-grafana
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-options: ApplyOutOfSyncOnly=true
+spec:
+  generators:
+    - plugin:
+        configMapRef:
+          name: paas-capabilities-plugin-generator
+        input:
+          parameters:
+            capability: grafana
+        requeueAfterSeconds: 30
+  template:
+    metadata:
+      name: '{{paas}}-capability-grafana'
+    spec:
+      destination:
+        namespace: '{{paas}}-grafana'
+        server: 'https://kubernetes.default.svc'
+      project: paas
+      source:
+        chart: paasgrafana
+        helm:
+          parameters:
+            - name: paas
+              value: '{{paas}}'
+            - name: clusterquotagroup
+              value: '{{requestor}}'
+            - name: cluster
+              value: '${MYCLUSTER}'
+            - name: 'image'
+              value: '{{image}}'
+        repoURL: my-charts/paas-argocd
+        targetRevision: dummy
+      syncPolicy:
+        automated:
+          selfHeal: true

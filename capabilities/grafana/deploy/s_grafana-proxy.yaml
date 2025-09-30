@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  annotations:
+    argocd.argoproj.io/sync-wave: "-9"
+  name: grafana-proxy
+data:
+  session_secret: Y3BldCByb2Nrcw==
+type: Opaque
