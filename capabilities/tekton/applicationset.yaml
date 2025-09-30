@@ -1,0 +1,38 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: paas-tekton
+  namespace: cpet-argocd
+  annotations:
+    argocd.argoproj.io/sync-options: ApplyOutOfSyncOnly=true
+spec:
+  generators:
+    - plugin:
+        configMapRef:
+          name: paas-capabilities-plugin-generator
+        input:
+          parameters:
+            capability: tekton
+        requeueAfterSeconds: 30
+  template:
+    metadata:
+      name: '{{paas}}-capability-tekton'
+    spec:
+      destination:
+        namespace: '{{paas}}-tekton'
+        server: 'https://kubernetes.default.svc'
+      project: paas
+      source:
+        kustomize:
+          commonLabels:
+            capability: tekton
+            clusterquotagroup: '{{requestor}}'
+            paas: '{{paas}}'
+            service: '{{service}}'
+            subservice: '{{subservice}}'
+        path: capabilities/tekton/artifacts
+        repoURL: 'ssh://git@github.com:belastingdienst/opr-paas-capabilities.git'
+        targetRevision: main
+      syncPolicy:
+        automated:
+          selfHeal: true
