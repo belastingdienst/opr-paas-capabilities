@@ -1,0 +1,14 @@
+kind: Secret
+apiVersion: v1
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: argocd
+    app.kubernetes.io/name: argocd-cluster
+    app.kubernetes.io/part-of: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: '-9'
+  name: argocd-cluster
+  namespace: argocd
+data:
+  admin.password: YWRtaW4=
+type: Opaque
