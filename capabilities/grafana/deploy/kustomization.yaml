@@ -1,0 +1,34 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../base
+  - dashboards
+  - g_grafana-deployment.yaml
+  - gd_loki-datasource.yaml
+  - gd_prometheus-datasource.yaml
+  - j_create-crb-monitoring-view.yaml
+  - np_operator-policy.yaml
+  - r_grafana-proxy.yaml
+  - rb_grafana-proxy.yaml
+  - s_grafana-proxy.yaml
+  - s_grafana-serviceaccount-token.yaml
+
+replacements:
+  - source:
+      group: batch
+      version: v1
+      kind: Job
+      name: create-crb-cluster-monitoring-view-
+      fieldpath: metadata.labels.paas
+    targets:
+      - select:
+          group: batch
+          version: v1
+          kind: Job
+          name: create-crb-cluster-monitoring-view-
+        fieldPaths:
+          - metadata.name
+        options:
+          delimiter: '-'
+          index: 5

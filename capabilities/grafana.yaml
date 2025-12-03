@@ -1,0 +1,31 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cpet-paas-grafana
+  namespace: cpet-argocd
+  annotations:
+    argocd.argoproj.io/sync-options: ApplyOutOfSyncOnly=true
+spec:
+  generators: []
+  template:
+    metadata:
+      name: '{{paas}}-cpet-capability-grafana'
+    spec:
+      destination:
+        namespace: '{{paas}}-grafana'
+        server: 'https://kubernetes.default.svc'
+      project: '{{paas}}'
+      source:
+        kustomize:
+          commonLabels:
+            capability: grafana
+            clusterquotagroup: '{{requestor}}'
+            paas: '{{paas}}'
+            service: '{{service}}'
+            subservice: '{{subservice}}'
+        path: paas-capabilities/grafana
+        repoURL: 'https://gitlab.com/BenoitSchipper/crc-benoit-sebas.git'
+        targetRevision: main
+      syncPolicy:
+        automated:
+          selfHeal: true

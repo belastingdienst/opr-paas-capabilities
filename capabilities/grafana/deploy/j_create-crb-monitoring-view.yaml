@@ -1,0 +1,53 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: create-crb-cluster-monitoring-view-
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: HookSucceeded
+spec:
+  template:
+    spec:
+      containers:
+        - name: create-crb-cluster-monitoring-view
+          image: 'registry.redhat.io/openshift4/ose-cli:v4.12.0'
+          env:
+            - name: PAAS
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['paas']
+            - name: CAPABILITY
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.labels['capability']
+          resources:
+            requests:
+              cpu: 150m
+              memory: 150Mi
+            limits:
+              cpu: 350m
+              memory: 350Mi
+          command:
+            - /bin/sh
+            - -x
+            - -c
+            - |
+              echo $PAAS &&
+              echo $CAPABILITY &&
+              oc apply -f - << EOF
+              apiVersion: rbac.authorization.k8s.io/v1
+              kind: ClusterRoleBinding
+              metadata:
+                name: "$PAAS-grafana-serviceaccount-cluster-monitoring-view"
+              roleRef:
+                apiGroup: rbac.authorization.k8s.io
+                kind: ClusterRole
+                name: cluster-monitoring-view
+              subjects:
+              - kind: ServiceAccount
+                name: grafana-paas-sa
+                namespace: "$PAAS-$CAPABILITY"
+              EOF
+      restartPolicy: OnFailure
+      serviceAccountName: argocd-argocd-application-controller
