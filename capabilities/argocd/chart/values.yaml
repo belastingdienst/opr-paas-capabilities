@@ -1,0 +1,17 @@
+# Default values for namespace.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+capability: argocd
+clusterquotagroup: dummy
+service: dum
+subservice: tst
+cluster: placeholder
+oplosgroep: CAO00000
+paas: dum-dum
+groups: placeholder
+
+argocd_paasns_gen:
+  enabled: "false"
+  image:
+    repository: replace
+    tag: replace

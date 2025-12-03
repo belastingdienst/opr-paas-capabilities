@@ -1,0 +1,161 @@
+---
+apiVersion: argoproj.io/v1beta1
+kind: ArgoCD
+metadata:
+  name: argo-service
+spec:
+  controller:
+    processors: { }
+    resources:
+      limits:
+        memory: 5Gi
+      requests:
+        cpu: "100m"
+        memory: 2Gi
+    sharding: { }
+  sso:
+    dex:
+      openShiftOAuth: true
+      resources:
+        limits:
+          memory: 256Mi
+        requests:
+          cpu: 25m
+          memory: 75Mi
+    provider: dex
+  grafana:
+    enabled: false
+    ingress:
+      enabled: false
+    route:
+      enabled: false
+  ha:
+    enabled: false
+    resources:
+      limits:
+        memory: 256Mi
+      requests:
+        cpu: 250m
+        memory: 128Mi
+  initialSSHKnownHosts:
+    keys: |
+      github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
+      github.com ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBEmKSENjQEezOmxkZMy7opKgwFB9nkt5YRrYMjNuG5N87uRgg6CLrbo5wAdT/y6v0mKV0U2w0WZ2YB/++Tpockg=
+      github.com ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCj7ndNxQowgcQnjshcLrqPEiiphnt+VTTvDP6mHBL9j1aNUkY4Ue1gvwnGLVlOhGeYrnZaMgRK6+PKCUXaDbC7qtbW8gIkhL7aGCsOr/C56SJMy/BCZfxd1nWzAOxSDPgVsmerOBYfNqltV9/hWCqBywINIR+5dIg6JTJ72pcEpEjcYgXkE2YEFXV1JHnsKgbLWNlhScqb2UmyRkQyytRLtL+38TGxkxCflmO+5Z8CSSNY7GidjMIZ7Q4zMjA2n1nGrlTDkzwDCsw+wqFPGQA179cnfGWOWRVruj16z6XyvxvjJwbz0wQZ75XK5tKSb7FNyeIEs4TT4jk+S4dhPeAUC5y+bDYirYgM4GC7uEnztnZyaVWQ7B381AK4Qdrwt51ZqExKbQpTUNn+EjqoTwvqNj4kqx5QUCI0ThS/YkOxJCXmPUWZbhjpCg56i+2aB6CmK2JGhn57K5mj0MNdBXA4/WnwH6XoPWJzK5Nyu2zB3nAZp+S5hpQs+p1vN1/wsjk=
+  prometheus:
+    enabled: false
+    ingress:
+      enabled: false
+    route:
+      enabled: false
+  applicationSet:
+    logLevel: info
+    resources:
+      limits:
+        memory: 256Mi
+      requests:
+        cpu: 25m
+        memory: 128Mi
+  redis:
+    resources:
+      limits:
+        memory: 256Mi
+      requests:
+        cpu: 25m
+        memory: 128Mi
+  repo:
+    # flag controls how many manifests generations are running concurrently and helps avoid OOM kills.
+    extraRepoCommandArgs:
+      - '--parallelismlimit 4'
+    env:
+      - name: SSL_CERT_DIR
+        value: /tmp/sslcertdir
+    volumeMounts:
+      - mountPath: /tmp/sslcertdir
+        name: ssl
+    volumes:
+      - configMap:
+          name: user-ca-bundle
+        name: ssl
+    resources:
+      limits:
+        memory: 512Mi
+      requests:
+        cpu: 25m
+        memory: 256Mi
+  resourceHealthChecks:
+    - check: |
+        hs = {}
+        hs.status = "Progressing"
+        hs.message = ""
+        if obj.status ~= nil then
+          if obj.status.health ~= nil then
+            hs.status = obj.status.health.status
+            if obj.status.health.message ~= nil then
+              hs.message = obj.status.health.message
+            end
+          end
+        end
+        return hs
+      group: argoproj.io
+      kind: Application
+  resourceExclusions: |
+    - apiGroups:
+      - ''
+      kinds:
+      - Endpoints
+    - apiGroups:
+      - discovery.k8s.io
+      kinds:
+      - EndpointSlice
+    - apiGroups:
+      - tekton.dev
+      kinds:
+      - PipelineRun
+      - TaskRun
+    - apiGroups:
+      - kyverno.io
+      kinds:
+      - AdmissionReport
+      - BackgroundScanReport
+      - CleanupRolicy
+      - ClusterAdmissionReport
+      - ClusterBackgroundScanReport
+      - ClusterCleanupPolicy
+      - UpdateRequest
+    - apiGroups:
+      - wgpolicyk8s.io
+      kinds:
+      - ClusterPolicyReport
+      - PolicyReport
+  resourceTrackingMethod: annotation+label
+  rbac:
+    defaultPolicy: ''
+    policy: |-
+      {{- .Values.groups | nindent 6 }}
+    scopes: "[groups]"
+  server:
+    autoscale:
+      enabled: false
+    grpc:
+      ingress:
+        enabled: false
+    ingress:
+      enabled: false
+    insecure: true
+    resources:
+      limits:
+        memory: 256Mi
+      requests:
+        cpu: 25m
+        memory: 128Mi
+    route:
+      enabled: true
+      tls:
+        insecureEdgeTerminationPolicy: Redirect
+        termination: edge
+    service:
+      type: ""
+  kustomizeBuildOptions: '--load-restrictor LoadRestrictionsNone --enable-helm'
+  tls:
+    ca: { }

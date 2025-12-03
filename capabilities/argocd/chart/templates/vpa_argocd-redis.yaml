@@ -1,0 +1,21 @@
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: vpa-argocd-redis
+  namespace: {{ .Values.paas }}-{{ .Values.capability }}
+spec:
+  resourcePolicy:
+    containerPolicies:
+      - containerName: dex
+        maxAllowed:
+          cpu: '1'
+          memory: 512Mi
+        minAllowed:
+          cpu: 20m
+          memory: 50Mi
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: argo-service-redis
+  updatePolicy:
+    updateMode: Initial

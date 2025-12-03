@@ -1,0 +1,47 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: paas-argocd
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-options: ApplyOutOfSyncOnly=true
+spec:
+  generators:
+    - plugin:
+        configMapRef:
+          name: paas-capabilities-plugin-generator
+        input:
+          parameters:
+            capability: argocd
+        requeueAfterSeconds: 30
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+  template:
+    metadata:
+      name: '{{ .paas }}-capability-argocd'
+    spec:
+      destination:
+        namespace: '{{ .paas }}-argocd'
+        server: 'https://kubernetes.default.svc'
+      project: paas
+      sources:
+        - chart: paasargocd
+          helm:
+            valuesObject:
+              namespace: '{{ .paas }}-argocd'
+              service: '{{ .service }}'
+              subservice: '{{ .subservice }}'
+              oplosgroep: '{{ .requestor }}'
+              groups: '{{ .groups }}'
+              paas: '{{ .paas }}'
+              git_url: '{{ .git_url }}'
+              git_path: '{{ .git_path }}'
+              git_revision: '{{ .git_revision }}'
+          repoURL: my-charts/paas-argocd
+          targetRevision: dummy
+      syncPolicy:
+        automated:
+          selfHeal: true
+          prune: true

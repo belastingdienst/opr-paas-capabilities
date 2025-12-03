@@ -1,0 +1,10 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: argocd-ssh-known-hosts-cm
+  labels:
+    app.kubernetes.io/managed-by: argo-service
+    app.kubernetes.io/name: argocd-ssh-known-hosts-cm
+    app.kubernetes.io/part-of: argocd
+data:
+  ssh_known_hosts: >

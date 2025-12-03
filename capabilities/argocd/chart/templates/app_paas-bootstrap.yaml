@@ -1,0 +1,28 @@
+{{- if .Values.git_url }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: paas-bootstrap
+  namespace: {{ .Values.paas }}-{{ .Values.capability }}
+  labels:
+    app.kubernetes.io/created-by: opr-paas
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/part-of: opr-paas
+    itsmoplosgroep: {{ .Values.oplosgroep }}
+spec:
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: {{ .Values.paas }}-{{ .Values.capability }}
+  project: default
+  source:
+    repoURL: {{ .Values.git_url }}
+    path: {{ .Values.git_path | default "." }}
+    {{- if .Values.git_revision }}
+    targetRevision: {{ .Values.git_revision }}
+    {{- end }}
+  syncPolicy:
+    automated:
+      selfHeal: true
+    syncOptions:
+    - RespectIgnoreDifferences=true
+{{- end }}
