@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - aproj_paas.yaml
+  - arg-argocd.yaml
+  - cm_user-ca-bundle.yaml
+  - cr_alert-routing-edit.yaml
+  - cr_monitoring-edit.yaml
+  - crb_cluster-admin-argocd-argocd-application-controller.yaml
+  - crb_paas-alert-routing-edit.yaml
+  - crb_paas-monitoring-edit.yaml
+  - dlr_default-limitrange.yaml
+  - g_clusteradmin.yaml
+  - np_default-network-policies.yaml
+  - ns_cpet-argocd.yaml
+  - rb_admin-argo-service-argocd-application-controller.yaml
+  - s_argo-service-cluster.yaml

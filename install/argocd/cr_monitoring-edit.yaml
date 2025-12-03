@@ -1,0 +1,20 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: monitoring-edit
+rules:
+  - apiGroups: ["monitoring.coreos.com"]
+    resources:
+      - prometheuses
+      - alertmanagers
+      - servicemonitors
+      - podmonitors
+      - prometheusrules
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete

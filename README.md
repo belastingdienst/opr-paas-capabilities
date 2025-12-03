@@ -16,7 +16,24 @@ that would like to develop and contribute capabilities.
 
 ## Quickstart
 
-TODO
+- Create a k8s and get access to it:
+  Kind:
+
+  - Install [KinD](https://kind.sigs.k8s.io/docs/user/quick-start)
+    ```
+    go install sigs.k8s.io/kind@v0.30.0
+    kind create cluster
+    ```
+  - `kind create cluster --name paas`
+
+- Install ArgoCD
+  `kubectl apply -k install/argocd`
+
+- Install the Paas operator:
+  ```
+  kubectl apply -f https://github.com/belastingdienst/opr-paas/releases/latest/download/install.yaml
+  kubectl apply -f https://raw.githubusercontent.com/belastingdienst/opr-paas/refs/heads/main/examples/resources/_v1alpha2_paasconfig.yaml
+  ```
 
 ## Contributing
 

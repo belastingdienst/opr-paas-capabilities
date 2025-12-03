@@ -1,0 +1,18 @@
+kind: LimitRange
+apiVersion: v1
+metadata:
+  name: default-limitrange
+spec:
+  limits:
+    - type: Container
+      min:
+        cpu: 20m
+        memory: 50Mi
+      default:
+        cpu: 350m
+        memory: 350Mi
+      defaultRequest:
+        cpu: 150m
+        memory: 150Mi
+      maxLimitRequestRatio:
+        memory: '10'
