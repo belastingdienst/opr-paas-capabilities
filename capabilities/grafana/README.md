@@ -21,35 +21,34 @@ and get their very own Grafana to monitor all resources belonging to their Paas.
 
 Add the following to your Paas config block:
 
-!!! example
-    ```yaml
-    apiVersion: cpet.belastingdienst.nl/v1alpha2
-    kind: PaasConfig
-    metadata:
-      name: paas-config
-    ...
-    spec:
-      capabilities:
-        grafana:
-          custom_fields:
-            image:
-              validation: ^ghcr.io/myorg/something.*$
-          default_permissions:
-            grafana-paas-sa:
-            - cluster-monitoring-view
-          quotas:
-            clusterwide: false
-            defaults:
-              limits.memory: 2Gi
-              requests.cpu: "1"
-              requests.memory: 1Gi
-            ratio: 0
-    ```
+```yaml
+apiVersion: cpet.belastingdienst.nl/v1alpha2
+kind: PaasConfig
+metadata:
+  name: paas-config
+...
+spec:
+  capabilities:
+    grafana:
+      custom_fields:
+        image:
+          validation: ^ghcr.io/myorg/something.*$
+      default_permissions:
+        grafana-paas-sa:
+        - cluster-monitoring-view
+      quotas:
+        clusterwide: false
+        defaults:
+          limits.memory: 2Gi
+          requests.cpu: "1"
+          requests.memory: 1Gi
+        ratio: 0
+```
 
 This would enable a capability called grafana, which means:
 - that the plugin generator will respond to a request for Paas'es with the grafana capability enabled.
   The Paas can have `custom_fields` as defined in the `custom_fields` for the `grafana` capability in the PaasConfig.
-  The plugin generator will have these values (either input in the Paas, or a templated value using go-templating as defined in the PaasConfig) as key/value pairs in the response. 
+  The plugin generator will have these values (either input in the Paas, or a templated value using go-templating as defined in the PaasConfig) as key/value pairs in the response.
 - Furthermore, for every paas with an enabled grafana capability, a namespace and cluster quota is created.
 
 ### Applicationset
