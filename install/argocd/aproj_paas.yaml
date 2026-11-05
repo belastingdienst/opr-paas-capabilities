@@ -1,3 +1,7 @@
+# WARNING: quickstart only, see README.md in this directory.
+# This AppProject allows every resource kind, every destination and every source repository.
+# Every capability ApplicationSet uses this project, so anything a capability chart renders
+# is applied cluster-wide. Restrict it before using this outside a test cluster.
 ---
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject

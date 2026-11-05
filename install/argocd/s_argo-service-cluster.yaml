@@ -1,3 +1,5 @@
+# WARNING: quickstart only, see README.md in this directory.
+# admin.password is a well-known value. Never use this Secret outside a local test cluster.
 kind: Secret
 apiVersion: v1
 metadata:
