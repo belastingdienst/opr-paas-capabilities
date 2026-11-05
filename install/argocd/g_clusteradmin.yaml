@@ -1,3 +1,5 @@
+# WARNING: quickstart only, see README.md in this directory.
+# Makes the 'kubeadmin' and 'developer' users cluster admins, for local test clusters only.
 kind: Group
 apiVersion: user.openshift.io/v1
 metadata:
