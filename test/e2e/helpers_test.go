@@ -12,12 +12,14 @@ package e2e
 import (
 	"context"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/belastingdienst/opr-paas/v5/api/v1alpha2"
 	quotav1 "github.com/openshift/api/quota/v1"
 	userv1 "github.com/openshift/api/user/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -37,6 +39,10 @@ const (
 	// Paas reconciliation is fast; ArgoCD needs time to generate, render and sync.
 	paasTimeout   = 1 * time.Minute
 	argocdTimeout = 5 * time.Minute
+	// Removing an Application can take several minutes: once the operator has deleted the capability
+	// namespace, the Application controller backs off its reconciles (10s, 20s, ... 160s) and only then
+	// processes the deletion.
+	removalTimeout = 10 * time.Minute
 )
 
 var (
@@ -79,6 +85,24 @@ func deleteResourceSync(ctx context.Context, cfg *envconf.Config, obj k8s.Object
 		return err
 	}
 	return waitFor(ctx, conditions.New(cfg.Client().Resources()).ResourceDeleted(obj), argocdTimeout)
+}
+
+// deleteE2EPaases deletes all Paases created by these tests (name prefix "e2e-") and waits until they are gone.
+func deleteE2EPaases(ctx context.Context, cfg *envconf.Config) error {
+	var list v1alpha2.PaasList
+	if err := cfg.Client().Resources().List(ctx, &list); err != nil {
+		return fmt.Errorf("failed to list Paases: %w", err)
+	}
+	for i := range list.Items {
+		paas := &list.Items[i]
+		if !strings.HasPrefix(paas.Name, "e2e-") {
+			continue
+		}
+		if err := deleteResourceSync(ctx, cfg, paas); err != nil && !apierrors.IsNotFound(err) {
+			return fmt.Errorf("failed to delete Paas %s: %w", paas.Name, err)
+		}
+	}
+	return nil
 }
 
 // createPaasFn creates a Paas and waits until the operator reports it Ready.
@@ -157,7 +181,7 @@ func waitForApplicationSynced(ctx context.Context, t *testing.T, cfg *envconf.Co
 // waitForGone waits until the object no longer exists.
 func waitForGone(ctx context.Context, cfg *envconf.Config, gvk schema.GroupVersionKind, namespace, name string) error {
 	return waitFor(ctx, conditions.New(cfg.Client().Resources()).
-		ResourceDeleted(newUnstructured(gvk, namespace, name)), argocdTimeout)
+		ResourceDeleted(newUnstructured(gvk, namespace, name)), removalTimeout)
 }
 
 func mustNestedString(t *testing.T, obj *unstructured.Unstructured, fields ...string) string {

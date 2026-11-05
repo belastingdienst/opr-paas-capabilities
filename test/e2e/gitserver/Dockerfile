@@ -7,7 +7,8 @@ COPY main.go .
 RUN CGO_ENABLED=0 go build -o /gitserver main.go
 
 FROM docker.io/library/alpine:3.22
-RUN apk add --no-cache git \
+# git-daemon provides git http-backend
+RUN apk add --no-cache git git-daemon \
  && git config --system --add safe.directory '*'
 COPY --from=build /gitserver /usr/local/bin/gitserver
 COPY repos/ /srv/git/

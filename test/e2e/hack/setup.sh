@@ -58,7 +58,11 @@ step "Creating secrets"
 mkdir -p "${GENERATED_DIR}"
 apply_ns paas-system
 apply_ns argocd
-token="$(openssl rand -hex 32)"
+# Reuse the token on a re-run: the operator only reads it at startup.
+token="$(kubectl -n paas-system get secret generator-token -o jsonpath='{.data.ARGOCD_GENERATOR_TOKEN}' 2>/dev/null | base64 -d || true)"
+if [[ -z "${token}" ]]; then
+  token="$(openssl rand -hex 32)"
+fi
 kubectl -n paas-system create secret generic generator-token \
   --from-literal=ARGOCD_GENERATOR_TOKEN="${token}" --dry-run=client -o yaml | kubectl apply -f -
 kubectl -n argocd create secret generic paas-plugin-generator \

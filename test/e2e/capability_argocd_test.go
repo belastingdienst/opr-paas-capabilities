@@ -123,7 +123,8 @@ func TestCapabilityArgoCDRejectsMultiLineCustomFields(t *testing.T) {
 						_ = deleteResourceSync(ctx, cfg, paas)
 						continue
 					}
-					assert.Contains(t, err.Error(), field, "the rejection should name the field")
+					// opr-paas v5.13.0 does not name the field in the message, only the value and the regex.
+					assert.Contains(t, err.Error(), "does not match", "rejected by the validation regex of %s", field)
 				}
 				return ctx
 			}).

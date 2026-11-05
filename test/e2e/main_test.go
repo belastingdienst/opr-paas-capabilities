@@ -43,6 +43,12 @@ var (
 		ObjectMeta: metav1.ObjectMeta{Name: "paas-config"},
 		Spec: v1alpha2.PaasConfigSpec{
 			DecryptKeysSecret: v1alpha2.NamespacedName{Name: "example-keys", Namespace: "paas-system"},
+			// The CRD defaults for these fields do not apply when creating from Go: the fields have no
+			// omitempty, so "" is sent and the namespaces get a label with an empty key. Set the defaults.
+			QuotaLabel:      "clusterquotagroup",
+			RequestorLabel:  "requestor",
+			ManagedByLabel:  "argocd.argoproj.io/managed-by",
+			ManagedBySuffix: "argocd",
 			Capabilities: v1alpha2.ConfigCapabilities{
 				// capabilities/argocd/README.md
 				"argocd": {
@@ -101,14 +107,24 @@ func TestMain(m *testing.M) {
 	}
 
 	testenv.Setup(func(ctx context.Context, cfg *envconf.Config) (context.Context, error) {
-		config := paasConfig.DeepCopy()
+		// Not paasConfig.DeepCopy(): quota.Quota.DeepCopy() turns nil min/max quotas into empty maps,
+		// which the PaasConfig webhook rejects (opr-paas v5.13.0).
+		config := &paasConfig
 		if err := cfg.Client().Resources().Create(ctx, config); err != nil {
 			return ctx, fmt.Errorf("failed to create PaasConfig: %w", err)
 		}
-		return ctx, waitForPaasConfigActive(ctx, cfg, config)
+		if err := waitForPaasConfigActive(ctx, cfg, config); err != nil {
+			return ctx, err
+		}
+		// Leftovers of an interrupted run; they can only be removed while a PaasConfig exists.
+		return ctx, deleteE2EPaases(ctx, cfg)
 	})
 
 	testenv.Finish(func(ctx context.Context, cfg *envconf.Config) (context.Context, error) {
+		// Paases first: the operator needs the PaasConfig to finalize them.
+		if err := deleteE2EPaases(ctx, cfg); err != nil {
+			return ctx, err
+		}
 		return ctx, deleteResourceSync(ctx, cfg, &v1alpha2.PaasConfig{ObjectMeta: metav1.ObjectMeta{Name: "paas-config"}})
 	})
 
