@@ -10,10 +10,53 @@ and get their very own Grafana to monitor all resources belonging to their Paas.
   ```
   kubectl create -f https://github.com/grafana/grafana-operator/releases/latest/download/kustomize-cluster_scoped.yaml
   ```
+- Provide the settings listed in [Settings you must provide](#settings-you-must-provide),
+  most importantly the `grafana-proxy` session secret.
 - Install the extra resources as required by the Paas Capability integration
   ```
   kubectl apply -k ./deploy
   ```
+
+## Settings you must provide
+
+This capability is an example to take inspiration from, not a ready-to-run production setup.
+Some settings are deliberately left out of this repository because they must be unique and secret
+for every installation. Copying the manifests as-is will not give you a working Grafana until
+you provide them.
+
+| Setting | Where | Why |
+|---------|-------|-----|
+| `session_secret` in Secret `grafana-proxy` | Every namespace that runs a Grafana instance | Signs and encrypts the oauth-proxy session cookie. Anyone who knows it can forge a session. See [Session secret](#session-secret). |
+
+### Session secret
+
+The oauth-proxy sidecar reads its cookie secret from `/etc/proxy/secrets/session_secret`,
+mounted from the Secret `grafana-proxy`. Rules for this value:
+
+- Generate a random value of 16, 24 or 32 bytes per Grafana instance, never shared between
+  namespaces or clusters.
+- Never commit the value to git, not even to a private repository.
+- Rotate the value when it may have leaked. Restart the Grafana pods afterwards; existing sessions
+  become invalid and users log in again.
+
+Create the Secret manually:
+
+```
+kubectl -n <paas>-grafana create secret generic grafana-proxy \
+  --from-literal=session_secret="$(openssl rand -base64 24)"
+```
+
+`openssl rand -base64 24` produces exactly 32 characters, which the oauth-proxy accepts as an AES-256 key.
+
+When Grafana is rolled out per Paas, creating the Secret by hand does not scale. Automate it
+instead, for example with:
+
+- the [External Secrets Operator](https://external-secrets.io/) `Password` generator combined
+  with an `ExternalSecret`, which creates a random value per namespace;
+- your own secret management (Vault, Sealed Secrets, ...), as long as every instance gets its own value.
+
+Do not generate the value with Helm functions such as `randAlphaNum`. ArgoCD renders the chart
+on every sync, so the secret would change on each sync and log out all users.
 
 ## Adding Grafana as a capability
 
