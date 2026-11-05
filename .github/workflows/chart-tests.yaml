@@ -1,0 +1,26 @@
+name: chart-tests
+
+on:
+  pull_request:
+    paths:
+      - 'capabilities/**/chart/**'
+  push:
+    branches: [main]
+    paths:
+      - 'capabilities/**/chart/**'
+
+permissions:
+  contents: read
+
+jobs:
+  argocd-chart:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-helm@v4
+        with:
+          version: v3.16.2
+      - name: Lint
+        run: helm lint capabilities/argocd/chart
+      - name: Injection regression tests
+        run: capabilities/argocd/chart/tests/injection_test.sh

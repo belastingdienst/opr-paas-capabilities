@@ -3,22 +3,22 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: paas-bootstrap
-  namespace: {{ .Values.paas }}-{{ .Values.capability }}
+  namespace: {{ printf "%s-%s" .Values.paas .Values.capability | quote }}
   labels:
     app.kubernetes.io/created-by: opr-paas
     app.kubernetes.io/managed-by: kustomize
     app.kubernetes.io/part-of: opr-paas
-    itsmoplosgroep: {{ .Values.oplosgroep }}
+    itsmoplosgroep: {{ include "paasargocd.singleLine" (list "oplosgroep" .Values.oplosgroep) }}
 spec:
   destination:
     server: https://kubernetes.default.svc
-    namespace: {{ .Values.paas }}-{{ .Values.capability }}
+    namespace: {{ printf "%s-%s" .Values.paas .Values.capability | quote }}
   project: default
   source:
-    repoURL: {{ .Values.git_url }}
-    path: {{ .Values.git_path | default "." }}
+    repoURL: {{ include "paasargocd.singleLine" (list "git_url" .Values.git_url) }}
+    path: {{ include "paasargocd.singleLine" (list "git_path" (.Values.git_path | default ".")) }}
     {{- if .Values.git_revision }}
-    targetRevision: {{ .Values.git_revision }}
+    targetRevision: {{ include "paasargocd.singleLine" (list "git_revision" .Values.git_revision) }}
     {{- end }}
   syncPolicy:
     automated:
