@@ -1,0 +1,51 @@
+# In-cluster git server that serves a snapshot of the working tree under test.
+# ArgoCD reads the capabilities from here, so the e2e tests verify the code of the PR.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: e2e-git
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: git-server
+  namespace: e2e-git
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: git-server
+  template:
+    metadata:
+      labels:
+        app: git-server
+    spec:
+      containers:
+        - name: git-server
+          image: localhost/capabilities-gitserver:e2e
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8080
+              name: http
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop: [ALL]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: git-server
+  namespace: e2e-git
+spec:
+  selector:
+    app: git-server
+  ports:
+    - name: http
+      port: 80
+      targetPort: http

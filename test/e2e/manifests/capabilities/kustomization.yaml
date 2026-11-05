@@ -1,0 +1,24 @@
+# The capability ApplicationSets from this repository, as they are, except for where the
+# capability is read from: the in-cluster git server with a snapshot of the code under test.
+# Build with: kubectl kustomize --load-restrictor LoadRestrictionsNone
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../../../install/argocd/aproj_paas.yaml
+  - ../../../../capabilities/argocd/applicationset.yaml
+patches:
+  - target:
+      kind: ApplicationSet
+      name: paas-argocd
+    patch: |-
+      - op: remove
+        path: /spec/template/spec/sources/0/chart
+      - op: replace
+        path: /spec/template/spec/sources/0/repoURL
+        value: http://git-server.e2e-git.svc.cluster.local/capabilities.git
+      - op: add
+        path: /spec/template/spec/sources/0/path
+        value: capabilities/argocd/chart
+      - op: replace
+        path: /spec/template/spec/sources/0/targetRevision
+        value: HEAD

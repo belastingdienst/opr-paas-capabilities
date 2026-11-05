@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: webhook-service
+  namespace: paas-system
+spec:
+  ports:
+    - name: webhook
+      port: 443
+      protocol: TCP
+      targetPort: 9443
+    - name: plugin-generator
+      port: 4355
+      protocol: TCP
+      targetPort: 4355

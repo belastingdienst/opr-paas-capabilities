@@ -1,0 +1,11 @@
+# Plugin generator config referenced by the capability ApplicationSets
+# (spec.generators[].plugin.configMapRef.name). The token refers to the Secret
+# paas-plugin-generator (key: token), created by hack/setup.sh.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: paas-capabilities-plugin-generator
+data:
+  token: $paas-plugin-generator:token
+  baseUrl: http://webhook-service.paas-system.svc.cluster.local:4355
+  requestTimeout: "30"

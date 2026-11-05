@@ -1,0 +1,8 @@
+# The released opr-paas operator, with the ArgoCD plugin generator enabled.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - https://github.com/belastingdienst/opr-paas/releases/download/v5.13.0/install.yaml
+patches:
+  - path: deployment_patch.yaml
+  - path: service_patch.yaml
