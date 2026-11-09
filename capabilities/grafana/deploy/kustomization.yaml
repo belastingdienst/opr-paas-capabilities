@@ -9,5 +9,4 @@ resources:
   - np_operator-policy.yaml
   - r_grafana-proxy.yaml
   - rb_grafana-proxy.yaml
-  - s_grafana-proxy.yaml
   - s_grafana-serviceaccount-token.yaml
