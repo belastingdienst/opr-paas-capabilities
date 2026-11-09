@@ -131,8 +131,8 @@ spec:
   resourceTrackingMethod: annotation+label
   rbac:
     defaultPolicy: ''
-    policy: |-
-      {{- .Values.groups | nindent 6 }}
+    # groups is multi-line (an RBAC policy CSV) and partly user input; quote it so it cannot end the field.
+    policy: {{ .Values.groups | toString | quote }}
     scopes: "[groups]"
   server:
     autoscale:
