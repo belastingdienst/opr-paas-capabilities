@@ -35,6 +35,16 @@ that would like to develop and contribute capabilities.
   kubectl apply -f https://raw.githubusercontent.com/belastingdienst/opr-paas/refs/heads/main/examples/resources/_v1alpha2_paasconfig.yaml
   ```
 
+## Testing
+
+The capabilities are tested end to end on a KinD cluster with the Paas operator and ArgoCD:
+
+```
+make e2e
+```
+
+See [test/e2e/README.md](./test/e2e/README.md) for what is tested and how to add a capability.
+
 ## Contributing
 
 Please refer to our documentation in the [CONTRIBUTING.md](./CONTRIBUTING.md) file

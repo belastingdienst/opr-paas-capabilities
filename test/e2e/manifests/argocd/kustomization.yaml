@@ -1,0 +1,7 @@
+# Upstream ArgoCD, used as the central ArgoCD that rolls out the capabilities.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: argocd
+resources:
+  - https://raw.githubusercontent.com/argoproj/argo-cd/v3.1.12/manifests/install.yaml
+  - cm_paas-capabilities-plugin-generator.yaml
