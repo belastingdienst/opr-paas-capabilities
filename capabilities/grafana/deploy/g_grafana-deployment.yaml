@@ -20,11 +20,15 @@ spec:
           storage: 1Gi
   config:
     auth:
-      disable_login_form: 'false'
+      # Users log in through the oauth-proxy. The login form is only needed for the
+      # local admin account, so it is disabled. See README "Settings you must provide".
+      disable_login_form: 'true'
       disable_signout_menu: 'true'
     auth.anonymous:
       enabled: 'false'
     auth.basic:
+      # The grafana-operator uses basic auth with the admin account to manage
+      # dashboards and datasources, so basic auth stays enabled.
       enabled: 'true'
     auth.proxy:
       enabled: 'true'
@@ -34,11 +38,13 @@ spec:
     log:
       mode: console
     users:
-      auto_assign_org_role: Admin
-      editors_can_admin: 'true'
-    security:
-      admin_password: secret
-      admin_user: admin
+      # Every user who passes the oauth-proxy is created automatically with this role.
+      # Use the least privileged role and grant Editor/Admin explicitly.
+      auto_assign_org_role: Viewer
+      editors_can_admin: 'false'
+    # No admin_user/admin_password here: the grafana-operator then generates random admin
+    # credentials and stores them in the Secret <grafana name>-admin-credentials.
+    # Never put a static admin password in this file.
   deployment:
     spec:
       strategy:
