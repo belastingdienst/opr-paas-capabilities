@@ -10,6 +10,8 @@ on:
       - '.github/workflows/e2e.yaml'
   push:
     branches: [main]
+  # Required check for the merge queue. merge_group does not support path filters, so e2e always runs there.
+  merge_group:
 
 permissions:
   contents: read
