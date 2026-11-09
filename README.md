@@ -29,6 +29,9 @@ that would like to develop and contribute capabilities.
 - Install ArgoCD
   `kubectl apply -k install/argocd`
 
+  These manifests are for a local test cluster only: they use wildcard permissions and well-known
+  credentials. Read [install/argocd/README.md](./install/argocd/README.md) before using them anywhere else.
+
 - Install the Paas operator:
   ```
   kubectl apply -f https://github.com/belastingdienst/opr-paas/releases/latest/download/install.yaml
