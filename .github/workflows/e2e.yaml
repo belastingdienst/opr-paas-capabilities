@@ -1,0 +1,46 @@
+name: e2e
+
+on:
+  pull_request:
+    paths:
+      - 'capabilities/**'
+      - 'install/**'
+      - 'test/e2e/**'
+      - 'Makefile'
+      - '.github/workflows/e2e.yaml'
+  push:
+    branches: [main]
+  # Required check for the merge queue. merge_group does not support path filters, so e2e always runs there.
+  merge_group:
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: test/e2e/go.mod
+          cache-dependency-path: test/e2e/go.sum
+      - name: Create KinD cluster
+        run: make e2e-cluster
+      - name: Set up the cluster
+        run: make e2e-setup
+      - name: Run e2e tests
+        run: make e2e-test
+      - name: Dump state on failure
+        if: failure()
+        env:
+          KUBECONFIG: test/e2e/.generated/kubeconfig
+        run: |
+          kubectl get paas,paasconfig -o yaml || true
+          kubectl -n argocd get applicationsets,applications -o yaml || true
+          kubectl -n argocd logs deployment/argocd-applicationset-controller --tail=200 || true
+          kubectl -n argocd logs statefulset/argocd-application-controller --tail=200 || true
+          kubectl -n argocd logs deployment/argocd-repo-server --tail=200 || true
+          kubectl -n paas-system logs deployment/paas-controller-manager --tail=200 || true
+          kubectl -n e2e-git logs deployment/git-server --tail=100 || true

@@ -1,0 +1,23 @@
+# Based on test/e2e/manifests/e2e-with-plugingenerator in opr-paas.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: paas-controller-manager
+  namespace: paas-system
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: manager
+          args:
+            - --leader-elect
+            - --argocd-plugin-generator-bind-address=:4355
+          ports:
+            - containerPort: 4355
+              name: argocd
+              protocol: TCP
+          envFrom:
+            - secretRef:
+                # Created by hack/setup.sh, key ARGOCD_GENERATOR_TOKEN
+                name: generator-token

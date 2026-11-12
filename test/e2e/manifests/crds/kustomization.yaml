@@ -1,0 +1,11 @@
+# CRDs needed by the capabilities, without their operators: the e2e tests verify that the
+# capabilities are rendered and synced by ArgoCD, not that the operators reconcile them.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  # OpenShift mocks (ClusterResourceQuota, Group) maintained by the opr-paas e2e tests
+  - https://github.com/belastingdienst/opr-paas//test/e2e/manifests/openshift?ref=v5.13.0
+  # ArgoCD instances (argocd-operator), rendered by the argocd capability
+  - https://raw.githubusercontent.com/argoproj-labs/argocd-operator/v0.14.0/config/crd/bases/argoproj.io_argocds.yaml
+  # VerticalPodAutoscaler, rendered by the argocd capability
+  - https://raw.githubusercontent.com/kubernetes/autoscaler/vertical-pod-autoscaler-1.4.1/vertical-pod-autoscaler/deploy/vpa-v1-crd-gen.yaml
